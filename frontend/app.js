@@ -192,15 +192,15 @@ function renderArticles(articles) {
   }
 
   box.innerHTML = articles.map(a => {
-    const color   = feedColor(a.feed_id);
-    const title   = esc(a.title   || 'Untitled');
-    const source  = esc(a.feed_name || '');
-    const date    = a.pub_date ? fmtDate(a.pub_date) : '';
+    const color  = feedColor(a.feed_id);
+    const title  = esc(a.title    || 'Untitled');
+    const source = esc(a.feed_name || '');
+    const date   = a.pub_date ? fmtDate(a.pub_date) : '';
+
     const summary = a.summary
       ? `<div class="article-summary">${esc(a.summary)}</div>`
       : '';
 
-    // Thumbnail: fixed 96×96 square, removed cleanly on error
     const thumb = a.thumbnail
       ? `<div class="article-thumb-wrap">
            <img class="article-thumbnail"
@@ -214,13 +214,25 @@ function renderArticles(articles) {
     return `
       <div class="article-card" onclick="location.hash='#/article/${a.id}'">
         <div class="article-card-body">
-          <div class="article-meta">
-            <span class="article-source"
-                  style="color:${color};background:${color}18">${source}</span>
-            ${date ? `<span class="article-date">${date}</span>` : ''}
+          <div>
+            <div class="article-meta">
+              <span class="article-source"
+                    style="color:${color};background:${color}18">${source}</span>
+              ${date ? `<span class="article-date">${date}</span>` : ''}
+            </div>
           </div>
           <div class="article-title">${title}</div>
           ${summary}
+          <div class="article-card-footer">
+            <span class="article-read-more">
+              Read article
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </span>
+          </div>
         </div>
         ${thumb}
       </div>`;
