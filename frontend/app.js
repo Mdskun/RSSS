@@ -185,7 +185,7 @@ function renderArticles(articles) {
   box.innerHTML = articles.map(a => {
     const color = feedColor(a.feed_id);
     const thumb = a.thumbnail
-      ? `<img class="article-thumbnail" src="${esc(a.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      ? `<div class="article-thumb-wrap"><img class="article-thumbnail" src="${esc(a.thumbnail)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
       : '';
     return `
       <div class="article-card" onclick="location.hash='#/article/${a.id}'">

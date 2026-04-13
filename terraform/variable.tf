@@ -47,6 +47,7 @@ variable "db_name" {
 variable "alert_email" {
   description = "Email address to receive CloudWatch CPU alerts"
   type        = string
+  default = "manthandsoni@gamil.com"
 }
 
 variable "cpu_alarm_threshold" {
