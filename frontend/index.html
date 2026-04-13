@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FeedReader</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+        <span>FeedReader</span>
+      </div>
+
+      <button class="btn-add-feed" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Feed
+      </button>
+
+      <nav class="feed-nav">
+        <div class="feed-nav-label">MY FEEDS</div>
+        <div
+          class="feed-item active"
+          data-id="all"
+          onclick="selectFeed('all', 'All Articles')"
+        >
+          <span class="feed-dot" style="background:#6366f1"></span>
+          <span class="feed-item-name">All Articles</span>
+          <span class="feed-count" id="count-all"></span>
+        </div>
+        <div id="feed-list"></div>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="main-header">
+        <div>
+          <h1 id="feed-title">All Articles</h1>
+          <p class="feed-subtitle" id="feed-subtitle">Latest from all your feeds</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-icon" id="btn-refresh" onclick="refreshCurrent()" title="Refresh feed">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+          <button class="btn-icon btn-danger" id="btn-delete" onclick="deleteCurrent()" title="Remove feed" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="articles" class="articles"></div>
+    </main>
+
+  </div>
+
+  <!-- Add Feed Modal -->
+  <div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add RSS Feed</h2>
+        <button class="modal-close" onclick="closeModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label>Feed URL <span class="required">*</span></label>
+        <input type="url" id="input-url" placeholder="https://feeds.example.com/rss" autocomplete="off" />
+        <label>Display Name <span class="optional">(optional)</span></label>
+        <input type="text" id="input-name" placeholder="e.g. Hacker News" />
+        <div class="modal-hint">Paste any RSS or Atom feed URL</div>
+        <div class="modal-error" id="modal-error"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="btn-submit" onclick="addFeed()">Add Feed</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
