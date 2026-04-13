@@ -11,6 +11,11 @@ output "app_alb_dns" {
   value = aws_lb.app.dns_name
 }
 
-output "db_private_ip" {
-  value = aws_instance.db.private_ip
+output "rds_endpoint" {
+  description = "RDS MySQL endpoint (private, accessible from app tier only)"
+  value       = aws_db_instance.main.address
+}
+
+output "rds_port" {
+  value = aws_db_instance.main.port
 }

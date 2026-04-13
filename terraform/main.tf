@@ -11,7 +11,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-# ─── Data ────────────────────────────────────────────────────────────────────
+# ─── Data ─────────────────────────────────────────────────────────────────────
 
 data "aws_availability_zones" "available" { state = "available" }
 
@@ -33,7 +33,7 @@ locals {
   az2 = data.aws_availability_zones.available.names[1]
 }
 
-# ─── VPC ─────────────────────────────────────────────────────────────────────
+# ─── VPC ──────────────────────────────────────────────────────────────────────
 
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
@@ -42,8 +42,8 @@ resource "aws_vpc" "main" {
   tags = { Name = "${var.project}-vpc" }
 }
 
-# ─── Subnets ─────────────────────────────────────────────────────────────────
-# Web Tier – public (2 AZs for ALB requirement)
+# ─── Subnets ──────────────────────────────────────────────────────────────────
+# Web Tier — public
 
 resource "aws_subnet" "web_a" {
   vpc_id                  = aws_vpc.main.id
@@ -61,7 +61,7 @@ resource "aws_subnet" "web_b" {
   tags = { Name = "${var.project}-web-b", Tier = "web" }
 }
 
-# App Tier – private
+# App Tier — private
 
 resource "aws_subnet" "app_a" {
   vpc_id            = aws_vpc.main.id
@@ -77,7 +77,7 @@ resource "aws_subnet" "app_b" {
   tags = { Name = "${var.project}-app-b", Tier = "app" }
 }
 
-# DB Tier – private
+# DB Tier — private (2 subnets required for RDS subnet group)
 
 resource "aws_subnet" "db_a" {
   vpc_id            = aws_vpc.main.id
@@ -100,7 +100,7 @@ resource "aws_internet_gateway" "igw" {
   tags   = { Name = "${var.project}-igw" }
 }
 
-# ─── NAT Gateway (lets private subnets reach internet for installs) ───────────
+# ─── NAT Gateway ──────────────────────────────────────────────────────────────
 
 resource "aws_eip" "nat" {
   domain = "vpc"
@@ -160,7 +160,7 @@ resource "aws_route_table_association" "db_b" {
   route_table_id = aws_route_table.private.id
 }
 
-# ─── Security Groups ─────────────────────────────────────────────────────────
+# ─── Security Groups ──────────────────────────────────────────────────────────
 
 resource "aws_security_group" "web_alb" {
   name   = "${var.project}-web-alb-sg"
@@ -193,7 +193,7 @@ resource "aws_security_group" "web_ec2" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]   # Restrict to your IP in production
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port   = 0
@@ -246,8 +246,9 @@ resource "aws_security_group" "app_ec2" {
   tags = { Name = "${var.project}-app-ec2-sg" }
 }
 
-resource "aws_security_group" "db_ec2" {
-  name   = "${var.project}-db-ec2-sg"
+# RDS only accepts connections from app EC2s
+resource "aws_security_group" "rds" {
+  name   = "${var.project}-rds-sg"
   vpc_id = aws_vpc.main.id
   ingress {
     from_port       = 3306
@@ -255,37 +256,44 @@ resource "aws_security_group" "db_ec2" {
     protocol        = "tcp"
     security_groups = [aws_security_group.app_ec2.id]
   }
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-  }
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = { Name = "${var.project}-db-ec2-sg" }
+  tags = { Name = "${var.project}-rds-sg" }
 }
 
-# ─── DB EC2 (MySQL) ───────────────────────────────────────────────────────────
+# ─── RDS MySQL ────────────────────────────────────────────────────────────────
 
-resource "aws_instance" "db" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.instance_type
-  subnet_id              = aws_subnet.db_a.id
-  vpc_security_group_ids = [aws_security_group.db_ec2.id]
-  key_name               = var.key_name
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.project}-db-subnet-group"
+  subnet_ids = [aws_subnet.db_a.id, aws_subnet.db_b.id]
+  tags       = { Name = "${var.project}-db-subnet-group" }
+}
 
-  user_data = templatefile("${path.module}/userdata-db.sh", {
-    db_user = var.db_user
-    db_pass = var.db_pass
-    db_name = var.db_name
-  })
+resource "aws_db_instance" "main" {
+  identifier        = "${var.project}-mysql"
+  engine            = "mysql"
+  engine_version    = "8.0"
+  instance_class    = var.db_instance_class
+  allocated_storage = 20
+  storage_type      = "gp2"
 
-  tags = { Name = "${var.project}-db" }
+  db_name  = var.db_name
+  username = var.db_user
+  password = var.db_pass
+
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.rds.id]
+
+  multi_az               = false   # set true for production HA
+  publicly_accessible    = false
+  skip_final_snapshot    = true    # set false for production
+  deletion_protection    = false   # set true for production
+
+  tags = { Name = "${var.project}-rds" }
 }
 
 # ─── App ALB ──────────────────────────────────────────────────────────────────
@@ -336,14 +344,14 @@ resource "aws_instance" "app_a" {
 
   user_data = templatefile("${path.module}/userdata-app.sh.tpl", {
     github_repo = var.github_repo
-    db_host     = aws_instance.db.private_ip
+    db_host     = aws_db_instance.main.address
     db_user     = var.db_user
     db_pass     = var.db_pass
     db_name     = var.db_name
   })
 
-  tags = { Name = "${var.project}-app-a" }
-  depends_on = [aws_instance.db]
+  tags       = { Name = "${var.project}-app-a" }
+  depends_on = [aws_db_instance.main]
 }
 
 resource "aws_instance" "app_b" {
@@ -355,14 +363,14 @@ resource "aws_instance" "app_b" {
 
   user_data = templatefile("${path.module}/userdata-app.sh.tpl", {
     github_repo = var.github_repo
-    db_host     = aws_instance.db.private_ip
+    db_host     = aws_db_instance.main.address
     db_user     = var.db_user
     db_pass     = var.db_pass
     db_name     = var.db_name
   })
 
-  tags = { Name = "${var.project}-app-b" }
-  depends_on = [aws_instance.db]
+  tags       = { Name = "${var.project}-app-b" }
+  depends_on = [aws_db_instance.main]
 }
 
 resource "aws_lb_target_group_attachment" "app_a" {
@@ -394,9 +402,9 @@ resource "aws_lb_target_group" "web" {
   vpc_id   = aws_vpc.main.id
 
   health_check {
-    path                = "/"
-    interval            = 30
-    healthy_threshold   = 2
+    path              = "/"
+    interval          = 30
+    healthy_threshold = 2
     unhealthy_threshold = 3
   }
   tags = { Name = "${var.project}-web-tg" }
@@ -422,11 +430,11 @@ resource "aws_instance" "web_a" {
   key_name               = var.key_name
 
   user_data = templatefile("${path.module}/userdata-web.sh.tpl", {
-    github_repo  = var.github_repo
-    app_alb_dns  = aws_lb.app.dns_name
+    github_repo = var.github_repo
+    app_alb_dns = aws_lb.app.dns_name
   })
 
-  tags = { Name = "${var.project}-web-a" }
+  tags       = { Name = "${var.project}-web-a" }
   depends_on = [aws_lb.app]
 }
 
@@ -438,11 +446,11 @@ resource "aws_instance" "web_b" {
   key_name               = var.key_name
 
   user_data = templatefile("${path.module}/userdata-web.sh.tpl", {
-    github_repo  = var.github_repo
-    app_alb_dns  = aws_lb.app.dns_name
+    github_repo = var.github_repo
+    app_alb_dns = aws_lb.app.dns_name
   })
 
-  tags = { Name = "${var.project}-web-b" }
+  tags       = { Name = "${var.project}-web-b" }
   depends_on = [aws_lb.app]
 }
 

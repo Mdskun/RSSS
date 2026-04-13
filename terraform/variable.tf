@@ -25,12 +25,17 @@ variable "instance_type" {
   default     = "t2.micro"
 }
 
+variable "db_instance_class" {
+  description = "RDS instance class"
+  default     = "db.t3.micro"
+}
+
 variable "db_user" {
   default = "rssuser"
 }
 
 variable "db_pass" {
-  description = "MySQL rootorapp password"
+  description = "RDS master password"
   default     = "RssP@ss2024!"
   sensitive   = true
 }
