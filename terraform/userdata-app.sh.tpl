@@ -20,6 +20,7 @@ npm install --production
 
 # Environment
 cat > /opt/feedreader/backend/.env <<ENVFILE
+JWT_SECRET=1444b3fcc1d0eeca3bd7565b6ac64233764b137057a10399810d4107cabdf240
 DB_HOST=${db_host}
 DB_USER=${db_user}
 DB_PASS=${db_pass}

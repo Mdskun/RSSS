@@ -1,87 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FeedReader</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div class="layout">
 
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
-        <span>FeedReader</span>
-      </div>
-
-      <button class="btn-add-feed" onclick="openModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Feed
-      </button>
-
-      <nav class="feed-nav">
-        <div class="feed-nav-label">MY FEEDS</div>
-        <div
-          class="feed-item active"
-          data-id="all"
-          onclick="selectFeed('all', 'All Articles')"
-        >
-          <span class="feed-dot" style="background:#6366f1"></span>
-          <span class="feed-item-name">All Articles</span>
-          <span class="feed-count" id="count-all"></span>
-        </div>
-        <div id="feed-list"></div>
-      </nav>
-    </aside>
-
-    <main class="main">
-      <div class="main-header">
-        <div>
-          <h1 id="feed-title">All Articles</h1>
-          <p class="feed-subtitle" id="feed-subtitle">Latest from all your feeds</p>
-        </div>
-        <div class="header-actions">
-          <button class="btn-icon" id="btn-refresh" onclick="refreshCurrent()" title="Refresh feed">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          </button>
-          <button class="btn-icon btn-danger" id="btn-delete" onclick="deleteCurrent()" title="Remove feed" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div id="articles" class="articles"></div>
-    </main>
-
+<!-- ── Auth Screen ───────────────────────────────────────────────────────── -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+      FeedReader
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Create Account</button>
+    </div>
+    <div class="auth-form">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email"/>
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"/>
+      <div class="auth-error" id="auth-error"></div>
+      <button class="btn-primary full" id="auth-submit" onclick="submitAuth()">Sign In</button>
+    </div>
+    <p class="auth-footer" id="auth-switch">
+      Don't have an account? <a href="#" onclick="switchTab('register')">Create one</a>
+    </p>
   </div>
+</div>
 
-  <!-- Add Feed Modal -->
-  <div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Add RSS Feed</h2>
-        <button class="modal-close" onclick="closeModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+<!-- ── Main App ──────────────────────────────────────────────────────────── -->
+<div class="app" id="app" style="display:none">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+      FeedReader
+    </div>
+
+    <button class="btn-add-feed" onclick="openAddModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Feed
+    </button>
+
+    <nav class="feed-nav">
+      <div class="feed-nav-label">MY FEEDS</div>
+      <div class="feed-item active" data-id="all" onclick="selectFeed('all','All Articles')">
+        <span class="feed-dot" style="background:#6366f1"></span>
+        <span class="feed-item-name">All Articles</span>
+      </div>
+      <div id="feed-list"></div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="opml-row">
+        <button class="btn-opml" onclick="exportOPML()" title="Export all feeds as OPML backup">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export OPML
+        </button>
+        <button class="btn-opml" onclick="triggerImport()" title="Import feeds from OPML file">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import OPML
+        </button>
+        <input type="file" id="opml-file" accept=".opml,.xml" style="display:none" onchange="importOPML(this)"/>
+      </div>
+      <div class="user-row">
+        <span class="user-email" id="user-email"></span>
+        <button class="btn-logout" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <h1 id="feed-title">All Articles</h1>
+        <p class="feed-subtitle" id="feed-subtitle">Latest from all your feeds</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-refresh" onclick="refreshCurrent()" title="Refresh">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <button class="btn-icon btn-danger" id="btn-delete" onclick="deleteCurrent()" title="Remove feed" style="display:none">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         </button>
       </div>
-      <div class="modal-body">
-        <label>Feed URL <span class="required">*</span></label>
-        <input type="url" id="input-url" placeholder="https://feeds.example.com/rss" autocomplete="off" />
-        <label>Display Name <span class="optional">(optional)</span></label>
-        <input type="text" id="input-name" placeholder="e.g. Hacker News" />
-        <div class="modal-hint">Paste any RSS or Atom feed URL</div>
-        <div class="modal-error" id="modal-error"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-        <button class="btn-primary" id="btn-submit" onclick="addFeed()">Add Feed</button>
+    </div>
+    <div id="articles" class="articles"></div>
+  </main>
+</div>
+
+<!-- ── Article Detail Page ───────────────────────────────────────────────── -->
+<div class="article-view" id="article-view">
+  <div class="article-view-topbar">
+    <button class="btn-back" onclick="closeArticle()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back
+    </button>
+    <a class="btn-original" id="article-link" href="#" target="_blank" rel="noopener">
+      Read original
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </a>
+  </div>
+
+  <div class="article-hero" id="article-hero" style="display:none">
+    <img id="article-hero-img" src="" alt=""/>
+  </div>
+
+  <div class="article-content">
+    <div class="article-detail-meta">
+      <span class="article-source" id="article-source"></span>
+      <span class="article-detail-author" id="article-author"></span>
+      <span class="article-date" id="article-date"></span>
+    </div>
+    <h1 class="article-detail-title" id="article-detail-title"></h1>
+    <div class="article-body" id="article-body"></div>
+  </div>
+</div>
+
+<!-- ── Add Feed Modal ────────────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add RSS Feed</h2>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <label>Feed URL <span class="required">*</span></label>
+      <input type="url" id="input-url" placeholder="https://feeds.example.com/rss"/>
+      <label>Display Name <span class="optional">(optional)</span></label>
+      <input type="text" id="input-name" placeholder="e.g. Hacker News"/>
+      <div class="modal-hint">Paste any RSS or Atom feed URL</div>
+      <div class="modal-error" id="modal-error"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="btn-submit" onclick="addFeed()">Add Feed</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Import Progress Modal ─────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="import-modal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header"><h2>Importing Feeds…</h2></div>
+    <div class="modal-body">
+      <div class="import-progress">
+        <div class="spinner-lg"></div>
+        <p id="import-status">Reading OPML file…</p>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

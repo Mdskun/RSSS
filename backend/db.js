@@ -7,20 +7,30 @@ const pool = mysql.createPool({
   password: process.env.DB_PASS || 'rsspassword',
   database: process.env.DB_NAME || 'rssdb',
   waitForConnections: true,
-  connectionLimit:    10,
-  queueLimit:         0,
+  connectionLimit: 10,
 });
 
 async function init() {
   const conn = await pool.getConnection();
   try {
     await conn.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id            INT AUTO_INCREMENT PRIMARY KEY,
+        email         VARCHAR(255) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS feeds (
         id         INT AUTO_INCREMENT PRIMARY KEY,
+        user_id    INT NOT NULL,
         name       VARCHAR(255) NOT NULL,
         url        VARCHAR(2000) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY uq_url (url(512))
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY uq_user_url (user_id, url(512))
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
 
@@ -29,14 +39,18 @@ async function init() {
         id         INT AUTO_INCREMENT PRIMARY KEY,
         feed_id    INT NOT NULL,
         title      VARCHAR(1000),
-        link       VARCHAR(2000),
+        link       TEXT,
+        thumbnail  TEXT,
         summary    TEXT,
+        content    MEDIUMTEXT,
+        author     VARCHAR(255),
         pub_date   DATETIME,
         fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (feed_id) REFERENCES feeds(id) ON DELETE CASCADE,
         UNIQUE KEY uq_article (feed_id, link(512))
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
+
     console.log('[db] Tables ready');
   } finally {
     conn.release();
