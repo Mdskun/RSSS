@@ -43,3 +43,14 @@ variable "db_pass" {
 variable "db_name" {
   default = "rssdb"
 }
+
+variable "alert_email" {
+  description = "Email address to receive CloudWatch CPU alerts"
+  type        = string
+}
+
+variable "cpu_alarm_threshold" {
+  description = "CPU % that triggers the WARNING alarm on app EC2s"
+  type        = number
+  default     = 70
+}
