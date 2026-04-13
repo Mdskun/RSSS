@@ -175,27 +175,52 @@ async function loadArticles() {
 
 function renderArticles(articles) {
   const box = document.getElementById('articles');
+
   if (!articles.length) {
-    box.innerHTML = `<div class="state-empty">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
-      <p>No articles yet. Add a feed or hit refresh.</p></div>`;
+    box.innerHTML = `
+      <div class="state-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+          <path d="M4 11a9 9 0 0 1 9 9"/>
+          <path d="M4 4a16 16 0 0 1 16 16"/>
+          <circle cx="5" cy="19" r="1"/>
+        </svg>
+        <h3>No articles yet</h3>
+        <p>Add a feed or hit refresh to get started.</p>
+      </div>`;
     return;
   }
 
   box.innerHTML = articles.map(a => {
-    const color = feedColor(a.feed_id);
-    const thumb = a.thumbnail
-      ? `<div class="article-thumb-wrap"><img class="article-thumbnail" src="${esc(a.thumbnail)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+    const color   = feedColor(a.feed_id);
+    const title   = esc(a.title   || 'Untitled');
+    const source  = esc(a.feed_name || '');
+    const date    = a.pub_date ? fmtDate(a.pub_date) : '';
+    const summary = a.summary
+      ? `<div class="article-summary">${esc(a.summary)}</div>`
       : '';
+
+    // Thumbnail: fixed 96×96 square, removed cleanly on error
+    const thumb = a.thumbnail
+      ? `<div class="article-thumb-wrap">
+           <img class="article-thumbnail"
+                src="${esc(a.thumbnail)}"
+                alt=""
+                loading="lazy"
+                onerror="this.closest('.article-thumb-wrap').style.display='none'">
+         </div>`
+      : '';
+
     return `
       <div class="article-card" onclick="location.hash='#/article/${a.id}'">
         <div class="article-card-body">
           <div class="article-meta">
-            <span class="article-source" style="color:${color};background:${color}18">${esc(a.feed_name)}</span>
-            ${a.pub_date ? `<span class="article-date">${fmtDate(a.pub_date)}</span>` : ''}
+            <span class="article-source"
+                  style="color:${color};background:${color}18">${source}</span>
+            ${date ? `<span class="article-date">${date}</span>` : ''}
           </div>
-          <div class="article-title">${esc(a.title || 'Untitled')}</div>
-          ${a.summary ? `<div class="article-summary">${esc(a.summary)}</div>` : ''}
+          <div class="article-title">${title}</div>
+          ${summary}
         </div>
         ${thumb}
       </div>`;
