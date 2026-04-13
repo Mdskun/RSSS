@@ -36,7 +36,7 @@ variable "db_user" {
 
 variable "db_pass" {
   description = "RDS master password"
-  default     = "RssP@ss2024!"
+  default     = "RssPass2024l"
   sensitive   = true
 }
 
