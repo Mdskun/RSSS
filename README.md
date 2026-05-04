@@ -1,8 +1,28 @@
-# 📡 FeedReader
+<h1 align="center">📡 FeedReader</h1>
 
-> A self-hosted, multi-user RSS feed reader — deployed on AWS with a production-grade
-> 3-tier architecture using Terraform. Built as a portfolio project to demonstrate
-> cloud infrastructure, full-stack development, and DevOps practices.
+<p align="center">
+  <b>Self-hosted, multi-user RSS feed reader</b><br>
+  Built with Node.js • MySQL • AWS • Terraform
+</p>
+
+<p align="center">
+  Production-ready 3-tier architecture • Full-stack • DevOps • Cloud Infrastructure
+</p>
+
+<p align="center">
+  🚀 Deploy •
+  🏗️ Architecture •
+  📦 Tech Stack •
+  🔌 API
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Frontend-Vanilla_JS-yellow" />
+  <img src="https://img.shields.io/badge/Backend-Node.js-green" />
+  <img src="https://img.shields.io/badge/Database-MySQL-blue" />
+  <img src="https://img.shields.io/badge/Infra-Terraform-purple" />
+  <img src="https://img.shields.io/badge/Cloud-AWS-orange" />
+</p>
 
 ---
 
