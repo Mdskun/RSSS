@@ -23,7 +23,7 @@ services:
     depends_on:
       - backend
     build:
-      context: ./fronted
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: feedreader-web
     restart: unless-stopped
