@@ -1,0 +1,33 @@
+services:
+  db:
+    container_name: feedreader-db
+    image: mysql
+    restart: always
+    env_file: .env
+    ports:
+      - 3306:3306
+    volumes:
+      - db_data:/var/lib/mysql
+  backend:
+    depends_on:
+      - db
+    container_name: feedreader-api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+  frontend:
+    depends_on:
+      - backend
+    build:
+      context: ./fronted
+      dockerfile: Dockerfile
+    container_name: feedreader-web
+    restart: unless-stopped
+    ports:
+      - 80:80
+volumes:
+  db_data:
