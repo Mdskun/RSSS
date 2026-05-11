@@ -272,7 +272,9 @@ This project is licensed under the **MIT License**.
 ## 👨‍💻 Author & Credits
 
 **Manthan D Soni**
-GitHub: [https://github.com/mdskun](https://github.com/mdskun)
+
+[![GitHub](https://img.shields.io/badge/GitHub-mdskun-181717?style=flat&logo=github)](https://github.com/mdskun)
+[![Email](https://img.shields.io/badge/Email-manthandsoni%40gmail.com-D14836?style=flat&logo=gmail)](mailto:manthandsoni@gmail.com)
 
 ---
 
